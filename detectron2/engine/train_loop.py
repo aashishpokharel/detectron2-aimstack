@@ -491,7 +491,7 @@ class AMPTrainer(SimpleTrainer):
         # if i % 300 == 0:
         logging.info("LOGS. Epoch:", epoch)
         aim_run.track(
-            loss_dict, name='loss', epoch=epoch, context={'subset': 'train', }
+            loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
         )
         # aim_run.track(
         #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}

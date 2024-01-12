@@ -514,7 +514,7 @@ class AMPTrainer(SimpleTrainer):
         with autocast(dtype=self.precision):
             loss_dict = self.model(data)
             
-            aim_track(self,aim_run, loss_dict, self.iter)
+            self.aim_track(self,aim_run, loss_dict, self.iter)
             
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict

@@ -481,7 +481,7 @@ class AMPTrainer(SimpleTrainer):
         self.precision = precision
         self.log_grad_scaler = log_grad_scaler
         
-    def aim_track(aim_run, loss_dict, epoch):
+    def aim_track(self, aim_run, loss_dict, epoch):
         # aim_run.track(items, epoch=epoch, context={'subset': 'train'})
 
         # aim - Track weights and gradients distributions
@@ -489,6 +489,7 @@ class AMPTrainer(SimpleTrainer):
         # track_gradients_dists(model, aim_run)
         # remainder.
         # if i % 300 == 0:
+        logging.info("LOGS. Epoch:", epoch)
         aim_run.track(
             loss_dict.item(), name='loss', epoch=epoch, context={'subset': 'train'}
         )
@@ -513,7 +514,7 @@ class AMPTrainer(SimpleTrainer):
         with autocast(dtype=self.precision):
             loss_dict = self.model(data)
             
-            aim_track(aim_run, loss_dict, self.iter)
+            aim_track(self,aim_run, loss_dict, self.iter)
             
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict

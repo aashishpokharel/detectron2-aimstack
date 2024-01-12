@@ -13,6 +13,11 @@ import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.utils.logger import _log_api_usage
 
+from aim import Run
+# Initialize a new Run
+aim_run = Run(repo = "/aim")
+
+
 __all__ = ["HookBase", "TrainerBase", "SimpleTrainer", "AMPTrainer"]
 
 
@@ -475,6 +480,21 @@ class AMPTrainer(SimpleTrainer):
         self.grad_scaler = grad_scaler
         self.precision = precision
         self.log_grad_scaler = log_grad_scaler
+        
+    def aim_track(aim_run, loss_dict, epoch):
+        # aim_run.track(items, epoch=epoch, context={'subset': 'train'})
+
+        # aim - Track weights and gradients distributions
+        # track_params_dists(model, aim_run)
+        # track_gradients_dists(model, aim_run)
+        # remainder.
+        # if i % 300 == 0:
+        aim_run.track(
+            loss_dict.item(), name='loss', epoch=epoch, context={'subset': 'train'}
+        )
+        # aim_run.track(
+        #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
+        # )
 
     def run_step(self):
         """
@@ -492,6 +512,9 @@ class AMPTrainer(SimpleTrainer):
             self.optimizer.zero_grad()
         with autocast(dtype=self.precision):
             loss_dict = self.model(data)
+            
+            aim_track(aim_run, loss_dict, self.iter)
+            
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict
                 loss_dict = {"total_loss": loss_dict}

@@ -13,9 +13,9 @@ import detectron2.utils.comm as comm
 from detectron2.utils.events import EventStorage, get_event_storage
 from detectron2.utils.logger import _log_api_usage
 
-from aim import Run
-# Initialize a new Run
-aim_run = Run(repo = "/aim")
+# from aim import Run
+# # Initialize a new Run
+# aim_run = Run(repo = "/aim")
 
 
 __all__ = ["HookBase", "TrainerBase", "SimpleTrainer", "AMPTrainer"]
@@ -366,6 +366,7 @@ class SimpleTrainer(TrainerBase):
         data_time: float,
         prefix: str = "",
         iter: Optional[int] = None,
+        # aim_run = None
     ) -> None:
         logger = logging.getLogger(__name__)
 
@@ -373,10 +374,26 @@ class SimpleTrainer(TrainerBase):
         if (iter + 1) % self.gather_metric_period == 0:
             try:
                 SimpleTrainer.write_metrics(loss_dict, data_time, iter, prefix)
+                # aim_track(aim_run, loss_dict, epoch=iter)
+                
             except Exception:
                 logger.exception("Exception in writing metrics: ")
                 raise
+    # def aim_track(self, aim_run, loss_dict, epoch):
+    #     # aim_run.track(items, epoch=epoch, context={'subset': 'train'})
 
+    #     # aim - Track weights and gradients distributions
+    #     # track_params_dists(model, aim_run)
+    #     # track_gradients_dists(model, aim_run)
+    #     # remainder.
+    #     # if i % 300 == 0:
+    #     logging.info("LOGS. Epoch:", epoch)
+    #     aim_run.track(
+    #         loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
+    #     )
+    #     # aim_run.track(
+    #     #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
+    #     # )
     @staticmethod
     def write_metrics(
         loss_dict: Mapping[str, torch.Tensor],
@@ -481,21 +498,6 @@ class AMPTrainer(SimpleTrainer):
         self.precision = precision
         self.log_grad_scaler = log_grad_scaler
         
-    def aim_track(self, aim_run, loss_dict, epoch):
-        # aim_run.track(items, epoch=epoch, context={'subset': 'train'})
-
-        # aim - Track weights and gradients distributions
-        # track_params_dists(model, aim_run)
-        # track_gradients_dists(model, aim_run)
-        # remainder.
-        # if i % 300 == 0:
-        logging.info("LOGS. Epoch:", epoch)
-        aim_run.track(
-            loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
-        )
-        # aim_run.track(
-        #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
-        # )
 
     def run_step(self):
         """
@@ -514,7 +516,7 @@ class AMPTrainer(SimpleTrainer):
         with autocast(dtype=self.precision):
             loss_dict = self.model(data)
             
-            self.aim_track(aim_run, loss_dict, self.iter)
+            # self.aim_track(aim_run, loss_dict, self.iter)
             
             if isinstance(loss_dict, torch.Tensor):
                 losses = loss_dict

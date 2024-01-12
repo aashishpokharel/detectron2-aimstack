@@ -12,6 +12,14 @@ import torch
 from fvcore.common.history_buffer import HistoryBuffer
 
 from detectron2.utils.file_io import PathManager
+from aim import Run
+# # Initialize a new Run
+# aim_run = Run(repo = "/aim")
+from aim import Run
+# Initialize a new Run
+aim_run = Run(repo = "/aim")
+
+
 
 __all__ = [
     "get_event_storage",
@@ -128,6 +136,7 @@ class JSONWriter(EventWriter):
         for itr, scalars_per_iter in to_save.items():
             scalars_per_iter["iteration"] = itr
             self._file_handle.write(json.dumps(scalars_per_iter, sort_keys=True) + "\n")
+            aim_track(aim_run, scalars_per_iter, itr)
         self._file_handle.flush()
         try:
             os.fsync(self._file_handle.fileno())
@@ -137,6 +146,21 @@ class JSONWriter(EventWriter):
     def close(self):
         self._file_handle.close()
 
+def aim_track(aim_run, loss_dict, epoch):
+        # aim_run.track(items, epoch=epoch, context={'subset': 'train'})
+
+        # aim - Track weights and gradients distributions
+        # track_params_dists(model, aim_run)
+        # track_gradients_dists(model, aim_run)
+        # remainder.
+        # if i % 300 == 0:
+        logging.info("LOGS. Epoch:", epoch)
+        aim_run.track(
+            loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
+        )
+        # aim_run.track(
+        #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
+        # )
 
 class TensorboardXWriter(EventWriter):
     """

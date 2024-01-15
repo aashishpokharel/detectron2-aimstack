@@ -17,7 +17,7 @@ from aim import Run
 # aim_run = Run(repo = "/aim")
 from aim import Run
 # Initialize a new Run
-aim_run = Run(repo = "/aim")
+# aim_run = Run(repo = "/aim")
 
 
 

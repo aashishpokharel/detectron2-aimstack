@@ -117,14 +117,13 @@ def aim_track(aim_run, loss_dict, epoch):
         # remainder.
         # if i % 300 == 0:
         logging.info("LOGS. Epoch:", epoch)
+        if "bbox/AP" in loss_dict.keys():
+            subset = 'val'
+        else:
+            subset = 'train'
         aim_run.track(
-            loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
-        )
-        breakpoint()
-        # aim_run.track(
-        #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
-        # )
-        
+                loss_dict, name=None, epoch=epoch, context={'subset': subset, }
+            )        
 class AIMWriter(EventWriter):
     """
     

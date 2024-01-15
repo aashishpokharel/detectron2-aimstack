@@ -120,6 +120,7 @@ def aim_track(aim_run, loss_dict, epoch):
         aim_run.track(
             loss_dict, name=None, epoch=epoch, context={'subset': 'train', }
         )
+        breakpoint()
         # aim_run.track(
         #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
         # )

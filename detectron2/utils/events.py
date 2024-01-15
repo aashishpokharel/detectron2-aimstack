@@ -12,12 +12,12 @@ import torch
 from fvcore.common.history_buffer import HistoryBuffer
 
 from detectron2.utils.file_io import PathManager
-from aim import Run
-# # Initialize a new Run
-# aim_run = Run(repo = "/aim")
+
+
+
 from aim import Run
 # Initialize a new Run
-# aim_run = Run(repo = "/aim")
+aim_run = Run(repo = "/aim")
 
 
 
@@ -28,6 +28,7 @@ __all__ = [
     "TensorboardXWriter",
     "CommonMetricPrinter",
     "EventStorage",
+    "AIMWriter",
 ]
 
 _CURRENT_STORAGE_STACK = []
@@ -122,7 +123,41 @@ def aim_track(aim_run, loss_dict, epoch):
         # aim_run.track(
         #     acc, name='accuracy', epoch=epoch, context={'subset': 'val'}
         # )
+        
+class AIMWriter(EventWriter):
+    """
+    
+    """
 
+    def __init__(self, json_file = "file.json", window_size=20):
+        """
+        Args:
+            json_file (str): path to the json file. New data will be appended if the file exists.
+            window_size (int): the window size of median smoothing for the scalars whose
+                `smoothing_hint` are True.
+        """
+        # self._file_handle = PathManager.open(json_file, "a")
+        self._window_size = window_size
+        self._last_write = -1
+
+    def write(self):
+        storage = get_event_storage()
+        to_save = defaultdict(dict)
+
+        for k, (v, iter) in storage.latest_with_smoothing_hint(self._window_size).items():
+            # keep scalars that have not been written
+            if iter <= self._last_write:
+                continue
+            to_save[iter][k] = v
+        if len(to_save):
+            all_iters = sorted(to_save.keys())
+            self._last_write = max(all_iters)
+
+        for itr, scalars_per_iter in to_save.items():
+            scalars_per_iter["iteration"] = itr
+            # self._file_handle.write(json.dumps(scalars_per_iter, sort_keys=True) + "\n")
+            aim_track(aim_run, scalars_per_iter, itr)
+            
 class TensorboardXWriter(EventWriter):
     """
     Write all scalars to a tensorboard file.
